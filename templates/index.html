@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+    <title>Dominos</title>
+    <script>
+      var WORKER_PATH = "{{ url_for('static', filename='js/recorderWorker.js') }}";
+    </script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/recorder.js') }}"></script>
+  </head>
+  <body>
+    <header class="header">
+      <div></div>
+      <h1>ⓓⓞⓜⓘⓝⓞⓢ</h1>
+      <!-- Add Theme Toggle Button -->
+      <button id="theme-toggle" class="theme-toggle-btn">Toggle Theme</button>
+    </header>
+    <aside class="aside">
+      <div class="asidetitle">
+        <h2>Your Dominos</h2>
+      </div>
+      <div class="history" id="history"></div>
+    </aside>
+    <main class="main">
+      <div class="textblock">
+        <div class="imgblock">
+          <img
+            src="{{ url_for('static', filename='imgs/BT.png') }}"
+            alt="Ben 10"
+            class="img"
+            id="img-main"
+          />
+        </div>
+        <div id="chat-box" class="contentblock"></div>
+      </div>
+      <div class="inputblock">
+        <input
+          type="text"
+          id="chat-input"
+          class="input"
+          placeholder="Type your text here ..."
+        />
+        <button id="send-btn" type="button" class="btn">
+          <img
+            src="{{ url_for('static', filename='imgs/send.png') }}"
+            alt="send button"
+            class="img-1"
+          />
+        </button>
+        <button id="mic-btn" type="button" class="btn">
+          <img
+            src="{{ url_for('static', filename='imgs/microphone.png') }}"
+            alt="mic button"
+            class="img-2"
+          />
+        </button>
+        <button type="button" class="btn">
+          <img
+            src="{{ url_for('static', filename='imgs/new-folder.png') }}"
+            alt="file button"
+            class="img-3"
+          />
+        </button>
+      </div>
+    </main>
+    <footer class="footer">
+      <p>&copy; 2024 ⓓⓞⓜⓘⓝⓞⓢ All rights reserved.</p>
+    </footer>
+
+    <script>
+      const lightThemeImageUrl =
+        "{{ url_for('static', filename='imgs/BT.png') }}";
+      const darkThemeImageUrl =
+        "{{ url_for('static', filename='imgs/barbie.png') }}";
+    </script>
+
+    <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <!-- <script src="https://code.responsivevoice.org/responsivevoice.js?key=BJFL9G9v"></script> -->
+
+    <!-- Speech Recognition Script -->
+    <script>
+      var recording = false;
+      var onFail = function (e) {
+        alert(
+          "Please allow the app to access your microphone in order to give voice commands."
+        );
+      };
+
+      var onSuccess = function (s) {
+        var AudioContext = window.AudioContext || window.webkitAudioContext;
+        var context = new AudioContext();
+        var mediaStreamSource = context.createMediaStreamSource(s);
+        recorder = new Recorder(mediaStreamSource);
+        recorder.record();
+        recording = true;
+      };
+
+      window.URL = window.URL || window.webkitURL;
+      navigator.getUserMedia =
+        navigator.getUserMedia ||
+        navigator.webkitGetUserMedia ||
+        navigator.mozGetUserMedia ||
+        navigator.msGetUserMedia;
+
+      var recorder;
+
+      function startRecording() {
+        if (navigator.getUserMedia) {
+          navigator.getUserMedia({ audio: true }, onSuccess, onFail);
+        } else {
+          console.log("navigator.getUserMedia not present");
+        }
+      }
+
+      function stopRecording() {
+        recorder.stop();
+        recording = false;
+        recorder.exportWAV(function (s) {
+          var formData = new FormData();
+          formData.append("audio", s);
+          fetch("/upload", {
+            method: "POST",
+            body: formData,
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data["error"]) {
+                alert(data["error"]);
+              } else {
+                processResponse(data["response"]);
+              }
+            });
+        });
+      }
+
+      //const chatInput = document.getElementById('chat-input');
+      const micBtn = document.getElementById("mic-btn");
+      const historyDiv = document.getElementById("history");
+
+      micBtn.addEventListener("click", () => {
+        if (recording) {
+          stopRecording();
+        } else startRecording();
+      });
+    </script>
+  </body>
+</html>
