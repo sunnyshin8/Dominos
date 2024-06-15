@@ -1,0 +1,152 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+/* static/style.css */
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(
+    to top right,
+    rgb(79, 207, 100, 0.4) 0%,
+    rgb(79, 207, 100, 0.8) 50%,
+    rgba(255, 20, 145, 0.8) 50%,
+    rgba(255, 20, 145, 0.4) 100%
+  );
+  background-size: cover; /* Cover the entire background */
+  background-position: center; /* Center the background image */
+  background-repeat: no-repeat; /* Do not repeat the background image */
+  height: 100vh;
+}
+.ben10 {
+  background-image: url("../imgs/ben10.png"); /* Replace 'ben10.jpg' with the filename of your Ben 10 image */
+  background-size: contain; /* Scale the background image to fit within the element's content box */
+  background-repeat: no-repeat;
+  width: 300px; /* Set the width of the Ben 10 image */
+  height: 400px; /* Set the height of the Ben 10 image */
+  position: absolute; /* Position the image absolutely */
+  top: 50%; /* Place the image 50% from the top of the body */
+  left: 90px; /* Adjust the left position as needed */
+  transform: translateY(-50%); /* Center the image vertically */
+  opacity: 0.7;
+}
+
+.barbie {
+  background-image: url("../imgs/barbie.png"); /* Replace 'barbie.jpg' with the filename of your Barbie image */
+  background-size: contain;
+  background-repeat: no-repeat;
+  width: 300px;
+  height: 400px;
+  position: absolute;
+  top: 50%;
+  right: 50px; /* Adjust the right position as needed */
+  transform: translateY(-50%);
+  opacity: 0.7;
+}
+h2 {
+  text-align: center;
+  color: rgb(79, 207, 100); /* Ben 10 orange */
+  font-size: 36px;
+  text-transform: uppercase;
+  margin-bottom: 30px;
+}
+h1 {
+  text-align: center;
+  color: rgb(0, 204, 102);
+}
+p {
+  text-align: center;
+  color: rgba(255, 20, 145, 1);
+}
+form {
+  max-width: 600px;
+  max-height: 600px;
+  margin: 0 auto;
+  background-color: #fff;
+  padding: 60px;
+  border-radius: 5px;
+  box-shadow: 2px 2px 10px rgba(0, 204, 102, 0.9) 50%,
+    rgba(0, 204, 102, 0.9) 100%, rgba(255, 20, 145, 0.9) 0%,
+    rgba(255, 20, 145, 0.9) 50%;
+  margin-bottom: 30px;
+}
+
+label {
+  display: block;
+  margin-bottom: 10px;
+  color: #333;
+  font-size: 24px;
+  text-transform: capitalize;
+}
+
+input[type="text"],
+input[type="password"] {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 20px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-sizing: border-box;
+}
+
+button[type="submit"] {
+  width: 100%;
+  padding: 10px;
+  background-color: #006633; /* Ben 10 green */
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s;
+  background: rgb(9, 121, 9);
+  background: linear-gradient(
+    45deg,
+    #51cf66 0%,
+    #51cf66 50%,
+    #ff1492 50%,
+    #ff1491 100%
+  );
+}
+
+button[type="submit"]:hover {
+  background: linear-gradient(
+    45deg,
+    #ff1492 0%,
+    #ff1491 50%,
+    #51cf66 50%,
+    #51cf66 100%
+  );
+  background-color: #00cc66; /* Lighter Ben 10 green */
+}
+
+/* Barbie theme */
+h2.barbie {
+  color: #ff69b4; /* Barbie pink */
+}
+
+button[type="submit"].barbie {
+  background-color: #ff69b4; /* Barbie pink */
+}
+
+button[type="submit"].barbie:hover {
+  background-color: #ff1493; /* Lighter Barbie pink */
+}
+a button {
+  border: none; /* Remove button border */
+  background: none; /* Remove button background */
+  color: green; /* Inherit text color from parent anchor */
+  cursor: pointer; /* Change cursor to pointer on hover */
+  padding: 0; /* Remove button padding */
+  font-size: inherit; /* Inherit font size from parent anchor */
+}
+
+/* Style button inside anchor tags on hover */
+a button:hover {
+  text-decoration: underline; /* Underline text on button hover */
+  color: #ff1493;
+}
