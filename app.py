@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, session, request, jsonify, redirect, url_for
 import pyttsx3
 import os
 import speech_recognition as sr
@@ -7,6 +7,9 @@ import datetime
 import wikipedia
 import pyjokes
 import requests
+from flask_pymongo import PyMongo
+from werkzeug.security import generate_password_hash, check_password_hash
+from config import Config
 from bs4 import BeautifulSoup
 
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -14,7 +17,10 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 UPLOAD_FOLDER = 'uploads'
 
 app = Flask(__name__, template_folder="templates", static_folder="static")
+app.config.from_object(Config)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+mongo = PyMongo(app)
 
 # Initialize text-to-speech engine
 engine = pyttsx3.init()
@@ -22,15 +28,13 @@ voices = engine.getProperty('voices')
 engine.setProperty('voice', voices[0].id)
 
 # Function to make the bot talk
-
-
 def talk(text):
     engine.say(text)
     engine.runAndWait()
 
 def transcript_audio():
     recognizer = sr.Recognizer()
-    with sr.AudioFile('uploads/audio.wav') as source:
+    with sr.AudioFile(os.path.join(app.config['UPLOAD_FOLDER'], 'audio.wav')) as source:
         audio = recognizer.listen(source)
         try:
             command = recognizer.recognize_google(audio)
@@ -40,8 +44,6 @@ def transcript_audio():
             return "Error"
 
 # Function to take voice command
-
-
 def take_command():
     listener = sr.Recognizer()
     command = ""
@@ -59,8 +61,6 @@ def take_command():
     return command
 
 # Function to run the chatbot
-
-
 def run_charbot(command):
     if 'play' in command:
         song = command.replace('play', '')
@@ -104,28 +104,61 @@ def run_charbot(command):
     else:
         return "speak('Please say the command again.')"
 
-
 def get_first_non_ad_url(url):
     try:
-      response = requests.get(url)
-      soup = BeautifulSoup(response.content, 'html.parser')
-
-      # Implement logic to identify non-ad URLs based on your website structure
-      # This example uses heuristics, you may need to adjust it for specific websites
-      for link in soup.find_all('a', href=True):
-        href = link['href']
-        if not (href.startswith('http') or href.startswith('/')):
-          continue  # Skip relative or non-http URLs
-        # You can add additional checks here to exclude URLs containing "ad", "sponsored", etc.
-        return href
-
-      # If no non-ad URL is found, return the original website
-      return url
+        response = requests.get(url)
+        soup = BeautifulSoup(response.content, 'html.parser')
+        for link in soup.find_all('a', href=True):
+            href = link['href']
+            if not (href.startswith('http') or href.startswith('/')):
+                continue
+            return href
+        return url
     except Exception as e:
-      print(f"Error fetching URL: {e}")
-      return url
+        print(f"Error fetching URL: {e}")
+        return url
 
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
+def signup():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        name = request.form.get('name')
+        if not username or not password:
+            return jsonify({'error': 'Username and password are required!'}), 400
+
+        if mongo.db.users.find_one({'username': username}):
+            error_message = 'Username already exists!'
+            return render_template('signup.html', error_message=error_message)
+
+        hashed_password = generate_password_hash(password)
+        mongo.db.users.insert_one({'username': username, 'password': hashed_password, 'name': name})
+
+        return redirect(url_for('login'))
+
+    return render_template('signup.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    error_message = None
+
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+
+        if not username or not password:
+            return jsonify({'error': 'Username and password are required!'}), 400
+
+        user = mongo.db.users.find_one({'username': username})
+        if user and check_password_hash(user['password'], password):
+            session['username'] = username
+            return redirect(url_for('index'))
+
+        error_message = 'Invalid username or password!'
+
+    return render_template('login.html', error_message=error_message)
+
+@app.route('/home')
 def index():
     return render_template('index.html')
 
@@ -144,16 +177,12 @@ def upload():
     if 'audio' not in request.files:
         return jsonify({'error': 'No audio file found'}), 400
     audio_file = request.files['audio']
-
-    # save the audio file
     audio_file.save(os.path.join(app.config['UPLOAD_FOLDER'], 'audio.wav'))
     command = transcript_audio()
     if command == "Error":
         return jsonify({'error': 'Error in transcribing audio'}), 400
     response = run_charbot(command)
     return jsonify({'response': response})
-        
-    
 
 if __name__ == '__main__':
     app.run(debug=True)
